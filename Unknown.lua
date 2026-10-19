@@ -11,7 +11,8 @@ local Camera = Workspace.CurrentCamera
 local targetParent = pcall(function() return CoreGui end) and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 
 task.spawn(function()
-	local message = "Unknown Hub [Ultimate Edition] by Đinh Thái Hoà"
+	local message = "Chan bố mày đi lol"
+	local message = "By Đinh Thái Hòa"
 	pcall(function()
 		if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
 			local generalChannel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
