@@ -46,6 +46,7 @@ sg.Parent = targetParent
 
 local HitboxEnabled = false
 local SpeedEnabled = false
+local NormalSpeedEnabled = false
 local SpinEnabled = false
 local EspMM2Enabled = false
 local AimbotEnabled = false
@@ -58,8 +59,8 @@ local LagToggleEnabled = false
 local HitboxSize = 23
 local SelectedPlayer = nil
 local savedPosition = nil
-local SpeedAmount = 1.35
-local NormalSpeedAmount = 67 -- 3x tốc độ gốc (16 * 3 = 48)
+local SpeedAmount = 40        -- Điều chỉnh Speed x3 thành 40
+local NormalSpeedAmount = 85  -- Điều chỉnh Speed thường thành 85
 local IsLagging = false
 
 local function setMaxFPS(cap)
@@ -73,7 +74,7 @@ local function setMaxFPS(cap)
 end
 
 local main = Instance.new("Frame", sg)
-main.Size = UDim2.new(0, 260, 0, 680)
+main.Size = UDim2.new(0, 260, 0, 720)
 main.Position = UDim2.new(0.05, 0, 0.15, 0)
 main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 main.BackgroundTransparency = 0.05
@@ -173,23 +174,24 @@ local function createButton(text, yPos, parent)
 end
 
 local toggleBtn, toggleStroke = createButton("HITBOX : OFF", 50, main)
-local speedBtn, speedStroke = createButton("SPEED x3 : OFF", 88, main)
-local spinBtn, spinStroke = createButton("XOAY 360 : OFF", 126, main)
-local espBtn, espStroke = createButton("ESP : OFF", 164, main)
-local aimBtn, aimStroke = createButton("AIMBOT : OFF", 202, main)
-local fpsBtn, fpsStroke = createButton("144FPS : OFF", 240, main)
-local invBtn, invStroke = createButton("TÀNG HÌNH : OFF", 278, main)
-local jumpBtn, jumpStroke = createButton("AUTO NHẢY : OFF", 316, main)
-local infJumpBtn, infJumpStroke = createButton("NHẢY VÔ HẠN : OFF", 354, main)
-local tracerBtn, tracerStroke = createButton("TRACER 120FPS : ON", 392, main)
-local lagBtn, lagStroke = createButton("LAG : OFF", 430, main)
+local speedBtn, speedStroke = createButton("SPEED ×3 : OFF", 88, main)
+local normalSpeedBtn, normalSpeedStroke = createButton("SPEED Thường : OFF", 126, main)
+local spinBtn, spinStroke = createButton("XOAY 360 : OFF", 164, main)
+local espBtn, espStroke = createButton("ESP : OFF", 202, main)
+local aimBtn, aimStroke = createButton("AIMBOT : OFF", 240, main)
+local fpsBtn, fpsStroke = createButton("144FPS : OFF", 278, main)
+local invBtn, invStroke = createButton("TÀNG HÌNH : OFF", 316, main)
+local jumpBtn, jumpStroke = createButton("AUTO NHẢY : OFF", 354, main)
+local infJumpBtn, infJumpStroke = createButton("NHẢY VÔ HẠN : OFF", 392, main)
+local tracerBtn, tracerStroke = createButton("TRACER 120FPS : ON", 430, main)
+local lagBtn, lagStroke = createButton("LAG : OFF", 468, main)
 
 tracerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 tracerStroke.Color = Color3.fromRGB(255, 255, 255)
 
 local itemBtn = Instance.new("TextButton", main)
 itemBtn.Size = UDim2.new(1, -32, 0, 32)
-itemBtn.Position = UDim2.new(0, 16, 0, 468)
+itemBtn.Position = UDim2.new(0, 16, 0, 506)
 itemBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 itemBtn.Text = "★彡 Рussу Uиkиоши 彡★"
 itemBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
@@ -202,7 +204,7 @@ itemStroke.Color = Color3.fromRGB(80, 80, 80)
 
 local selectBtn = Instance.new("TextButton", main)
 selectBtn.Size = UDim2.new(1, -32, 0, 32)
-selectBtn.Position = UDim2.new(0, 16, 0, 506)
+selectBtn.Position = UDim2.new(0, 16, 0, 544)
 selectBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 selectBtn.Text = "Chọn người chơi"
 selectBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -215,7 +217,7 @@ selectStroke.Color = Color3.fromRGB(50, 50, 50)
 
 local playerList = Instance.new("ScrollingFrame", main)
 playerList.Size = UDim2.new(1, -32, 0, 100)
-playerList.Position = UDim2.new(0, 16, 0, 544)
+playerList.Position = UDim2.new(0, 16, 0, 582)
 playerList.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 playerList.Visible = false
 playerList.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -228,7 +230,7 @@ listLayout.Padding = UDim.new(0, 4)
 
 local tpBtn = Instance.new("TextButton", main)
 tpBtn.Size = UDim2.new(1, -32, 0, 32)
-tpBtn.Position = UDim2.new(0, 16, 0, 544)
+tpBtn.Position = UDim2.new(0, 16, 0, 582)
 tpBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 tpBtn.Text = "Dịch chuyển"
 tpBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -273,7 +275,6 @@ local function updateSpin()
 	end
 end
 
--- Logic Nhảy Vô Hạn (Infinite Jump)
 UserInputService.JumpRequest:Connect(function()
 	if InfiniteJumpEnabled then
 		local char = LocalPlayer.Character
@@ -295,9 +296,16 @@ end)
 
 speedBtn.MouseButton1Click:Connect(function()
 	SpeedEnabled = not SpeedEnabled
-	speedBtn.Text = SpeedEnabled and "SPEED x3 : ON" or "SPEED x3 : OFF"
+	speedBtn.Text = SpeedEnabled and "SPEED ×3 : ON" or "SPEED ×3 : OFF"
 	speedBtn.TextColor3 = SpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
 	speedStroke.Color = SpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
+end)
+
+normalSpeedBtn.MouseButton1Click:Connect(function()
+	NormalSpeedEnabled = not NormalSpeedEnabled
+	normalSpeedBtn.Text = NormalSpeedEnabled and "SPEED Thường : ON" or "SPEED Thường : OFF"
+	normalSpeedBtn.TextColor3 = NormalSpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
+	normalSpeedStroke.Color = NormalSpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
 end)
 
 spinBtn.MouseButton1Click:Connect(function()
@@ -445,8 +453,8 @@ local function updatePlayerList()
 				SelectedPlayer = player
 				selectBtn.Text = player.DisplayName
 				playerList.Visible = false
-				tpBtn.Position = UDim2.new(0, 16, 0, 544)
-				main.Size = UDim2.new(0, 260, 0, 680)
+				tpBtn.Position = UDim2.new(0, 16, 0, 582)
+				main.Size = UDim2.new(0, 260, 0, 720)
 			end)
 		end
 	end
@@ -457,9 +465,11 @@ selectBtn.MouseButton1Click:Connect(function()
 	playerList.Visible = not playerList.Visible
 	if playerList.Visible then
 		updatePlayerList()
-		tpBtn.Position = UDim2.new(0, 16, 0, 650)
+		tpBtn.Position = UDim2.new(0, 16, 0, 688)
+		main.Size = UDim2.new(0, 260, 0, 740)
 	else
-		tpBtn.Position = UDim2.new(0, 16, 0, 544)
+		tpBtn.Position = UDim2.new(0, 16, 0, 582)
+		main.Size = UDim2.new(0, 260, 0, 720)
 	end
 end)
 
@@ -488,20 +498,19 @@ RunService.RenderStepped:Connect(function()
 		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 		local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 		
-		if AutoJumpEnabled and humanoid then
-			if humanoid.FloorMaterial ~= Enum.Material.Air then
-				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-			end
-		end
-
-		-- Kết hợp cả Speed CFrame (Evade) lẫn WalkSpeed (thường) vào chung một nút
 		if humanoid then
-			if SpeedEnabled then
+			if NormalSpeedEnabled then
 				humanoid.WalkSpeed = NormalSpeedAmount
 			else
 				if humanoid.WalkSpeed == NormalSpeedAmount then
-					humanoid.WalkSpeed = 16
+					humanoid.WalkSpeed = 16 
 				end
+			end
+		end
+
+		if AutoJumpEnabled and humanoid then
+			if humanoid.FloorMaterial ~= Enum.Material.Air then
+				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
 			end
 		end
 
@@ -516,11 +525,11 @@ RunService.RenderStepped:Connect(function()
 				local rayResult = Workspace:Raycast(root.Position, moveDir * 3.0, raycastParams)
 				
 				if not rayResult then
-					root.CFrame = root.CFrame + (moveDir * SpeedAmount)
+					root.CFrame = root.CFrame + (moveDir * (SpeedAmount / 29.6))
 				else
 					local slideDir = moveDir - rayResult.Normal * moveDir:Dot(rayResult.Normal)
 					if slideDir.Magnitude > 0 then
-						root.CFrame = root.CFrame + (slideDir.Unit * SpeedAmount)
+						root.CFrame = root.CFrame + (slideDir.Unit * (SpeedAmount / 29.6))
 					end
 				end
 			end
@@ -658,3 +667,4 @@ Players.PlayerRemoving:Connect(function(player)
 		TracerLines[player] = nil
 	end
 end)
+-- by Đinh Thái Hòa
