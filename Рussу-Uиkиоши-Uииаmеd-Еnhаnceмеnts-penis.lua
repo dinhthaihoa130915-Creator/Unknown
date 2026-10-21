@@ -1,4 +1,4 @@
--- By Đinh Thái Hòa
+-- By ★彡 Рussу Uиkиоши 彡★
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -14,7 +14,7 @@ local Camera = Workspace.CurrentCamera
 local targetParent = pcall(function() return CoreGui end) and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 
 task.spawn(function()
-	local message = "Unknown by Đinh Thái Hòa"
+	local message = "★彡 Рussу Uиkиоши 彡★"
 	pcall(function()
 		if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
 			local generalChannel = TextChatService.TextChannels:FindFirstChild("RBXGeneral")
@@ -171,10 +171,10 @@ local function createButton(text, yPos, parent)
 	return btn, bStroke
 end
 
-local toggleBtn, toggleStroke = createButton("HITBOX 23x23 : OFF", 50, main)
-local speedBtn, speedStroke = createButton("SPEED x3 (EVADE) : OFF", 88, main)
+local toggleBtn, toggleStroke = createButton("HITBOX : OFF", 50, main)
+local speedBtn, speedStroke = createButton("SPEED x3 : OFF", 88, main)
 local spinBtn, spinStroke = createButton("XOAY 360 : OFF", 126, main)
-local espBtn, espStroke = createButton("ESP MM2 : OFF", 164, main)
+local espBtn, espStroke = createButton("ESP : OFF", 164, main)
 local aimBtn, aimStroke = createButton("AIMBOT : OFF", 202, main)
 local fpsBtn, fpsStroke = createButton("144FPS : OFF", 240, main)
 local invBtn, invStroke = createButton("TÀNG HÌNH : OFF", 278, main)
@@ -190,7 +190,7 @@ local itemBtn = Instance.new("TextButton", main)
 itemBtn.Size = UDim2.new(1, -32, 0, 32)
 itemBtn.Position = UDim2.new(0, 16, 0, 468)
 itemBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-itemBtn.Text = "LẤY VẬT PHẨM (6880366374)"
+itemBtn.Text = "★彡 Рussу Uиkиоши 彡★"
 itemBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
 itemBtn.TextSize = 11
 itemBtn.FontFace = customFont
@@ -203,7 +203,7 @@ local selectBtn = Instance.new("TextButton", main)
 selectBtn.Size = UDim2.new(1, -32, 0, 32)
 selectBtn.Position = UDim2.new(0, 16, 0, 506)
 selectBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-selectBtn.Text = "Chọn người chơi..."
+selectBtn.Text = "Chọn người chơi"
 selectBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
 selectBtn.TextSize = 12
 selectBtn.FontFace = customFont
@@ -229,7 +229,7 @@ local tpBtn = Instance.new("TextButton", main)
 tpBtn.Size = UDim2.new(1, -32, 0, 32)
 tpBtn.Position = UDim2.new(0, 16, 0, 544)
 tpBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-tpBtn.Text = "TELEPORT"
+tpBtn.Text = "Dịch chuyển"
 tpBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
 tpBtn.TextSize = 13
 tpBtn.FontFace = customFont
@@ -287,14 +287,14 @@ end)
 
 toggleBtn.MouseButton1Click:Connect(function()
 	HitboxEnabled = not HitboxEnabled
-	toggleBtn.Text = HitboxEnabled and "HITBOX 23x23 : ON" or "HITBOX 23x23 : OFF"
+	toggleBtn.Text = HitboxEnabled and "HITBOX : ON" or "HITBOX : OFF"
 	toggleBtn.TextColor3 = HitboxEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
 	toggleStroke.Color = HitboxEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
 end)
 
 speedBtn.MouseButton1Click:Connect(function()
 	SpeedEnabled = not SpeedEnabled
-	speedBtn.Text = SpeedEnabled and "SPEED x3 (EVADE) : ON" or "SPEED x3 (EVADE) : OFF"
+	speedBtn.Text = SpeedEnabled and "SPEED x3 : ON" or "SPEED x3 : OFF"
 	speedBtn.TextColor3 = SpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
 	speedStroke.Color = SpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
 end)
@@ -309,7 +309,7 @@ end)
 
 espBtn.MouseButton1Click:Connect(function()
 	EspMM2Enabled = not EspMM2Enabled
-	espBtn.Text = EspMM2Enabled and "ESP MM2 : ON" or "ESP MM2 : OFF"
+	espBtn.Text = EspMM2Enabled and "ESP : ON" or "ESP : OFF"
 	espBtn.TextColor3 = EspMM2Enabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
 	espStroke.Color = EspMM2Enabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
 end)
