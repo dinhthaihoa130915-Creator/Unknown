@@ -59,6 +59,7 @@ local HitboxSize = 23
 local SelectedPlayer = nil
 local savedPosition = nil
 local SpeedAmount = 1.35
+local NormalSpeedAmount = 67 -- 3x tốc độ gốc (16 * 3 = 48)
 local IsLagging = false
 
 local function setMaxFPS(cap)
@@ -457,10 +458,8 @@ selectBtn.MouseButton1Click:Connect(function()
 	if playerList.Visible then
 		updatePlayerList()
 		tpBtn.Position = UDim2.new(0, 16, 0, 650)
-		main.Size = UDim2.new(0, 260, 0, 700)
 	else
 		tpBtn.Position = UDim2.new(0, 16, 0, 544)
-		main.Size = UDim2.new(0, 260, 0, 680)
 	end
 end)
 
@@ -492,6 +491,17 @@ RunService.RenderStepped:Connect(function()
 		if AutoJumpEnabled and humanoid then
 			if humanoid.FloorMaterial ~= Enum.Material.Air then
 				humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+			end
+		end
+
+		-- Kết hợp cả Speed CFrame (Evade) lẫn WalkSpeed (thường) vào chung một nút
+		if humanoid then
+			if SpeedEnabled then
+				humanoid.WalkSpeed = NormalSpeedAmount
+			else
+				if humanoid.WalkSpeed == NormalSpeedAmount then
+					humanoid.WalkSpeed = 16
+				end
 			end
 		end
 
