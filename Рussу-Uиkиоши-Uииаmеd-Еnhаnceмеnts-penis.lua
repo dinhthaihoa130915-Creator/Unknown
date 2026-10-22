@@ -174,8 +174,8 @@ local function createButton(text, yPos, parent)
 end
 
 local toggleBtn, toggleStroke = createButton("HITBOX : OFF", 50, main)
-local speedBtn, speedStroke = createButton("SPEED ×3 : OFF", 88, main)
-local normalSpeedBtn, normalSpeedStroke = createButton("SPEED Thường : OFF", 126, main)
+local speedBtn, speedStroke = createButton("SPEED x3 : OFF", 88, main)
+local normalSpeedBtn, normalSpeedStroke = createButton("SPEED THƯỜNG : OFF", 126, main)
 local spinBtn, spinStroke = createButton("XOAY 360 : OFF", 164, main)
 local espBtn, espStroke = createButton("ESP : OFF", 202, main)
 local aimBtn, aimStroke = createButton("AIMBOT : OFF", 240, main)
@@ -296,14 +296,14 @@ end)
 
 speedBtn.MouseButton1Click:Connect(function()
 	SpeedEnabled = not SpeedEnabled
-	speedBtn.Text = SpeedEnabled and "SPEED ×3 : ON" or "SPEED ×3 : OFF"
+	speedBtn.Text = SpeedEnabled and "SPEED x3 : ON" or "SPEED x3 : OFF"
 	speedBtn.TextColor3 = SpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
 	speedStroke.Color = SpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
 end)
 
 normalSpeedBtn.MouseButton1Click:Connect(function()
 	NormalSpeedEnabled = not NormalSpeedEnabled
-	normalSpeedBtn.Text = NormalSpeedEnabled and "SPEED Thường : ON" or "SPEED Thường : OFF"
+	normalSpeedBtn.Text = NormalSpeedEnabled and "SPEED THƯỜNG : ON" or "SPEED THƯỜNG : OFF"
 	normalSpeedBtn.TextColor3 = NormalSpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
 	normalSpeedStroke.Color = NormalSpeedEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
 end)
@@ -667,4 +667,4 @@ Players.PlayerRemoving:Connect(function(player)
 		TracerLines[player] = nil
 	end
 end)
--- by Đinh Thái Hòa
+-- Dinhgiaphat1309
