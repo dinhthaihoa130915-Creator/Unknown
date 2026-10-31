@@ -1,4 +1,3 @@
--- By ★彡 Рussу Uиkиоши 彡★
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -87,7 +86,7 @@ linkNotify.TextSize = 11
 linkNotify.FontFace = customFont
 
 getLinkBtn.MouseButton1Click:Connect(function()
-	local url = "https://raw.githubusercontent.com/dinhthaihoa130915-Creator/Unknown/refs/heads/lol/Key"
+	local url = "https://byvn.net/1Ct1"
 	pcall(function()
 		if setclipboard then
 			setclipboard(url)
@@ -100,6 +99,10 @@ end)
 
 local function StartMainScript()
 	keyGui:Destroy()
+
+	local lagStart = os.clock()
+	while (os.clock() - lagStart) < 0.3 do
+	end
 
 	task.spawn(function()
 		local message = "★彡 Рussу Uиkиоши 彡★"
@@ -160,9 +163,6 @@ local function StartMainScript()
 		end)
 	end
 
-	-- ==========================================
-	-- NÚT MENU (Bật/Tắt Menu chính)
-	-- ==========================================
 	local menuToggleBtn = Instance.new("TextButton", sg)
 	menuToggleBtn.Name = "MenuToggleButton"
 	menuToggleBtn.Size = UDim2.new(0, 90, 0, 38)
@@ -478,9 +478,6 @@ local function StartMainScript()
 		lagTriggerBtn.Visible = LagToggleEnabled
 	end)
 
-	-- ==========================================
-	-- NÚT LAG MỚI: ÉP FPS VỀ 0 TRONG 0.2S VÀ TP TỚI
-	-- ==========================================
 	lagTriggerBtn.MouseButton1Click:Connect(function()
 		if IsLagging then return end
 		IsLagging = true
@@ -493,13 +490,10 @@ local function StartMainScript()
 			local startCFrame = root.CFrame
 			local moveDir = humanoid.MoveDirection
 			
-			-- Bắt đầu đứng hình FPS bằng cách block main thread trong 0.2s
 			local startTime = os.clock()
 			while (os.clock() - startTime) < 0.2 do
-				-- Vòng lặp rỗng ép màn hình bị khựng 0 FPS trong 0.2 giây
 			end
 			
-			-- Sau 0.2s lag, thực hiện dịch chuyển theo hướng di chuyển
 			if moveDir.Magnitude > 0 then
 				local tpDistance = 25
 				root.CFrame = startCFrame + (moveDir * tpDistance)
@@ -518,15 +512,13 @@ local function StartMainScript()
 	end)
 
 	local function getMM2Role(player)
-		if not player.Character then return "Innocent", Color3.fromRGB(0, 255, 0) end
-		
+		if not player.Character then return "Innocent" end
 		if player.Character:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife")) then
-			return "Murderer", Color3.fromRGB(255, 0, 0)
+			return "Murderer"
 		elseif player.Character:FindFirstChild("Gun") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Gun")) then
-			return "Sheriff", Color3.fromRGB(0, 120, 255)
+			return "Sheriff"
 		end
-		
-		return "Innocent", Color3.fromRGB(0, 255, 0)
+		return "Innocent"
 	end
 
 	local function updatePlayerList()
@@ -581,6 +573,9 @@ local function StartMainScript()
 	end)
 
 	RunService.RenderStepped:Connect(function()
+		local hue = (os.clock() % 5) / 5
+		local pastelRainbowColor = Color3.fromHSV(hue, 0.45, 1)
+
 		if LocalPlayer.Character and not IsLagging then
 			local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
 			local root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
@@ -662,7 +657,7 @@ local function StartMainScript()
 							hrp.Transparency = 1
 						end
 
-						local role, roleColor = getMM2Role(player)
+						local role = getMM2Role(player)
 						local highlight = player.Character:FindFirstChild("UnknownESP")
 						local billboard = head and head:FindFirstChild("UnknownTag")
 
@@ -672,7 +667,7 @@ local function StartMainScript()
 								highlight.Name = "UnknownESP"
 								highlight.Parent = player.Character
 							end
-							highlight.FillColor = roleColor
+							highlight.FillColor = pastelRainbowColor
 							highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
 							highlight.FillTransparency = 0.4
 
@@ -698,7 +693,7 @@ local function StartMainScript()
 								local roleText = role == "Murderer" and "🔪 SÁT NHÂN" or (role == "Sheriff" and "🔫 CẢNH SÁT" or "👤 DÂN THƯỜNG")
 								
 								billboard.RoleLabel.Text = player.DisplayName .. "\n[" .. roleText .. " - " .. dist .. "m]"
-								billboard.RoleLabel.TextColor3 = roleColor
+								billboard.RoleLabel.TextColor3 = pastelRainbowColor
 							end
 						else
 							if highlight then highlight:Destroy() end
@@ -715,7 +710,7 @@ local function StartMainScript()
 						if TracerEnabled and onScreen then
 							tracer.From = screenCenter
 							tracer.To = Vector2.new(screenPos.X, screenPos.Y)
-							tracer.Color = roleColor
+							tracer.Color = pastelRainbowColor
 							tracer.Visible = true
 						else
 							tracer.Visible = false
@@ -762,7 +757,7 @@ end
 
 submitBtn.MouseButton1Click:Connect(function()
 	local success, result = pcall(function()
-		return game:HttpGet("https://raw.githubusercontent.com/dinhthaihoa130915-Creator/Unknown/refs/heads/lol/Key")
+		return game:HttpGet("https://byvn.net/1Ct1")
 	end)
 	
 	local onlineKey = success and result:gsub("%s+", "") or "Unknown-841BD586010346D9"
