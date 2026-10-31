@@ -6,6 +6,7 @@ local MarketPlaceService = game:GetService("MarketplaceService")
 local TextChatService = game:GetService("TextChatService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -14,9 +15,6 @@ local targetParent = pcall(function() return CoreGui end) and CoreGui or LocalPl
 
 local customFont = Font.fromId(12187369046)
 
--- ==========================================
--- GIAO DIỆN NHẬP KEY & LẤY LINK
--- ==========================================
 local keyGui = Instance.new("ScreenGui")
 keyGui.Name = "LimitedEditionKeySystem"
 keyGui.ResetOnSpawn = false
@@ -146,12 +144,17 @@ local function StartMainScript()
 	local InfiniteJumpEnabled = false
 	local TracerEnabled = true
 	local LagToggleEnabled = false
+	local DarkModeEnabled = false
 	local HitboxSize = 23
 	local SelectedPlayer = nil
 	local savedPosition = nil
 	local SpeedAmount = 67
 	local NormalSpeedAmount = 200
 	local IsLagging = false
+
+	local originalClockTime = Lighting.ClockTime
+	local originalBrightness = Lighting.Brightness
+	local originalAmbient = Lighting.Ambient
 
 	local function setMaxFPS(cap)
 		pcall(function()
@@ -181,7 +184,7 @@ local function StartMainScript()
 	menuToggleStroke.Color = Color3.fromRGB(85, 103, 255)
 
 	local main = Instance.new("Frame", sg)
-	main.Size = UDim2.new(0, 260, 0, 760)
+	main.Size = UDim2.new(0, 260, 0, 800) -- Đã tăng chiều cao để vừa nút mới
 	main.Position = UDim2.new(0.05, 0, 0.15, 0)
 	main.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 	main.BackgroundTransparency = 0.05
@@ -266,13 +269,14 @@ local function StartMainScript()
 	local infJumpBtn, infJumpStroke = createButton("NHẢY VÔ HẠN : OFF", 430, main)
 	local tracerBtn, tracerStroke = createButton("TRACER 120FPS : ON", 468, main)
 	local lagBtn, lagStroke = createButton("LAG : OFF", 506, main)
+	local darkBtn, darkStroke = createButton("DARK MODE : OFF", 544, main) -- Nút Dark Mode mới
 
 	tracerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	tracerStroke.Color = Color3.fromRGB(255, 255, 255)
 
 	local itemBtn = Instance.new("TextButton", main)
 	itemBtn.Size = UDim2.new(1, -32, 0, 32)
-	itemBtn.Position = UDim2.new(0, 16, 0, 544)
+	itemBtn.Position = UDim2.new(0, 16, 0, 582) -- Dời vị trí các nút dưới xuống 38px
 	itemBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 	itemBtn.Text = "★彡 Рussу Uиkиоши 彡★"
 	itemBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
@@ -285,7 +289,7 @@ local function StartMainScript()
 
 	local selectBtn = Instance.new("TextButton", main)
 	selectBtn.Size = UDim2.new(1, -32, 0, 32)
-	selectBtn.Position = UDim2.new(0, 16, 0, 582)
+	selectBtn.Position = UDim2.new(0, 16, 0, 620)
 	selectBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 	selectBtn.Text = "Chọn người chơi"
 	selectBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -298,7 +302,7 @@ local function StartMainScript()
 
 	local playerList = Instance.new("ScrollingFrame", main)
 	playerList.Size = UDim2.new(1, -32, 0, 100)
-	playerList.Position = UDim2.new(0, 16, 0, 620)
+	playerList.Position = UDim2.new(0, 16, 0, 658)
 	playerList.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 	playerList.Visible = false
 	playerList.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -311,7 +315,7 @@ local function StartMainScript()
 
 	local tpBtn = Instance.new("TextButton", main)
 	tpBtn.Size = UDim2.new(1, -32, 0, 32)
-	tpBtn.Position = UDim2.new(0, 16, 0, 620)
+	tpBtn.Position = UDim2.new(0, 16, 0, 658)
 	tpBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	tpBtn.Text = "Dịch chuyển"
 	tpBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -478,6 +482,24 @@ local function StartMainScript()
 		lagTriggerBtn.Visible = LagToggleEnabled
 	end)
 
+	-- Xử lý bật/tắt Dark Mode (Bầu trời đêm)
+	darkBtn.MouseButton1Click:Connect(function()
+		DarkModeEnabled = not DarkModeEnabled
+		darkBtn.Text = DarkModeEnabled and "DARK MODE : ON" or "DARK MODE : OFF"
+		darkBtn.TextColor3 = DarkModeEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(120, 120, 120)
+		darkStroke.Color = DarkModeEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(50, 50, 50)
+		
+		if DarkModeEnabled then
+			Lighting.ClockTime = 0 -- Chuyển sang 00:00 (Nửa đêm)
+			Lighting.Brightness = 1
+			Lighting.Ambient = Color3.fromRGB(20, 20, 35)
+		else
+			Lighting.ClockTime = originalClockTime
+			Lighting.Brightness = originalBrightness
+			Lighting.Ambient = originalAmbient
+		end
+	end)
+
 	lagTriggerBtn.MouseButton1Click:Connect(function()
 		if IsLagging then return end
 		IsLagging = true
@@ -544,8 +566,8 @@ local function StartMainScript()
 					SelectedPlayer = player
 					selectBtn.Text = player.DisplayName
 					playerList.Visible = false
-					tpBtn.Position = UDim2.new(0, 16, 0, 620)
-					main.Size = UDim2.new(0, 260, 0, 760)
+					tpBtn.Position = UDim2.new(0, 16, 0, 658)
+					main.Size = UDim2.new(0, 260, 0, 800)
 				end)
 			end
 		end
@@ -556,11 +578,11 @@ local function StartMainScript()
 		playerList.Visible = not playerList.Visible
 		if playerList.Visible then
 			updatePlayerList()
-			tpBtn.Position = UDim2.new(0, 16, 0, 726)
-			main.Size = UDim2.new(0, 260, 0, 780)
+			tpBtn.Position = UDim2.new(0, 16, 0, 764)
+			main.Size = UDim2.new(0, 260, 0, 810)
 		else
-			tpBtn.Position = UDim2.new(0, 16, 0, 620)
-			main.Size = UDim2.new(0, 260, 0, 760)
+			tpBtn.Position = UDim2.new(0, 16, 0, 658)
+			main.Size = UDim2.new(0, 260, 0, 800)
 		end
 	end)
 
