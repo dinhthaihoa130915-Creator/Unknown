@@ -1,0 +1,230 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+
+local CloakEnabled = false
+local Ghost = nil
+local SavedTransparency = {}
+local NameState = nil
+
+local function restoreVisuals()
+	for inst, value in pairs(SavedTransparency) do
+		pcall(function()
+			inst.Transparency = value
+		end)
+	end
+	table.clear(SavedTransparency)
+end
+
+local function destroyGhost()
+	if Ghost then
+		Ghost:Destroy()
+		Ghost = nil
+	end
+end
+
+local function restoreName()
+	if NameState then
+		if NameState.hum and NameState.hum.Parent then
+			pcall(function()
+				NameState.hum.DisplayDistanceType = NameState.value
+			end)
+		end
+		NameState = nil
+	end
+end
+
+local function applyCloak(char)
+	if not char or not CloakEnabled then return end
+
+	local hum = char:WaitForChild("Humanoid", 5)
+	local root = char:WaitForChild("HumanoidRootPart", 5)
+	if not hum or not root then return end
+	if not CloakEnabled or LocalPlayer.Character ~= char then return end
+
+	destroyGhost()
+
+	-- Ẩn phần thân thật với tất cả mọi người (replicate lên server)
+	for _, d in ipairs(char:GetDescendants()) do
+		if d:IsA("BasePart") or d:IsA("Decal") then
+			if SavedTransparency[d] == nil then
+				SavedTransparency[d] = d.Transparency
+			end
+			d.Transparency = 1
+		end
+	end
+
+	-- Ẩn tên trên đầu
+	restoreName()
+	NameState = { hum = hum, value = hum.DisplayDistanceType }
+	hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+
+	-- Tạo bản sao chỉ tồn tại ở client để camera và bản thân vẫn thấy nhân vật
+	char.Archivable = true
+	local ok, clone = pcall(function()
+		return char:Clone()
+	end)
+	if not ok or not clone then
+		warn("[Darkwen] Không thể tạo bản sao nhân vật")
+		return
+	end
+
+	for _, d in ipairs(clone:GetDescendants()) do
+		if d:IsA("Script") or d:IsA("LocalScript") or d:IsA("Humanoid")
+			or d:IsA("Motor6D") or d:IsA("Sound") or d:IsA("Animator") then
+			pcall(function() d:Destroy() end)
+		end
+	end
+
+	local function link(realNode, ghostNode)
+		for _, child in ipairs(ghostNode:GetChildren()) do
+			local realChild = realNode:FindFirstChild(child.Name)
+			if realChild and (not child:IsA("BasePart") or realChild:IsA("BasePart")) then
+				if child:IsA("BasePart") then
+					child.Anchored = false
+					child.CanCollide = false
+					child.CanTouch = false
+					child.CanQuery = false
+					child.Massless = true
+					local weld = Instance.new("WeldConstraint")
+					weld.Part0 = realChild
+					weld.Part1 = child
+					weld.Parent = child
+				end
+				link(realChild, child)
+			else
+				pcall(function() child:Destroy() end)
+			end
+		end
+	end
+
+	link(char, clone)
+
+	clone.Name = "CloakGhost"
+	clone.Parent = workspace
+	Ghost = clone
+end
+
+local function disableCloak()
+	CloakEnabled = false
+	destroyGhost()
+	restoreVisuals()
+	restoreName()
+end
+
+local function enableCloak()
+	CloakEnabled = true
+	if LocalPlayer.Character then
+		task.spawn(applyCloak, LocalPlayer.Character)
+	end
+end
+
+local function toggle()
+	if CloakEnabled then
+		disableCloak()
+	else
+		enableCloak()
+	end
+end
+
+LocalPlayer.CharacterAdded:Connect(function(char)
+	destroyGhost()
+	if CloakEnabled then
+		task.spawn(applyCloak, char)
+	end
+end)
+
+LocalPlayer.CharacterRemoving:Connect(function()
+	destroyGhost()
+end)
+
+-- GUI
+local gui = Instance.new("ScreenGui")
+gui.Name = "DarkwenCloak"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local guiParent = (typeof(gethui) == "function" and gethui()) or game:GetService("CoreGui")
+local okParent = pcall(function()
+	gui.Parent = guiParent
+end)
+if not okParent or not gui.Parent then
+	gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local btn = Instance.new("TextButton")
+btn.Name = "CloakButton"
+btn.Size = UDim2.fromScale(0.18, 0.07)
+btn.Position = UDim2.fromScale(0.02, 0.4)
+btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+btn.TextColor3 = Color3.new(1, 1, 1)
+btn.TextScaled = true
+btn.Font = Enum.Font.GothamBold
+btn.Text = "INVISIBLE: OFF"
+btn.AutoButtonColor = true
+btn.Parent = gui
+
+local sizeConstraint = Instance.new("UISizeConstraint")
+sizeConstraint.MinSize = Vector2.new(120, 40)
+sizeConstraint.MaxSize = Vector2.new(240, 64)
+sizeConstraint.Parent = btn
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = btn
+
+local function refreshButton()
+	if CloakEnabled then
+		btn.Text = "INVISIBLE: ON"
+		btn.BackgroundColor3 = Color3.fromRGB(40, 170, 80)
+	else
+		btn.Text = "INVISIBLE: OFF"
+		btn.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+	end
+end
+
+-- Kéo thả được, chạm nhanh để bật/tắt (mobile + PC)
+local dragging = false
+local moved = false
+local dragStart = nil
+local startPos = nil
+
+btn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		moved = false
+		dragStart = input.Position
+		startPos = btn.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+				if not moved then
+					toggle()
+					refreshButton()
+				end
+			end
+		end)
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if not dragging then return end
+	if input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.Touch then
+		local delta = input.Position - dragStart
+		if delta.Magnitude > 6 then
+			moved = true
+		end
+		if moved then
+			btn.Position = UDim2.new(
+				startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y
+			)
+		end
+	end
+end)
+
+refreshButton()
