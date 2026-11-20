@@ -15,6 +15,7 @@ local Camera = Workspace.CurrentCamera
 local targetParent = pcall(function() return CoreGui end) and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
 
 local customFont = Font.fromId(12187369046)
+local CustomFont = Font.new("rbxassetid://12187369046")
 
 -- Danh sách chứa các UIGradient viền cầu vồng của chữ để quay màu mượt
 local rainbowTextGradients = {}
@@ -116,7 +117,7 @@ local function applyLiquidGlass(instance, cornerRadius, isButton)
 
 	return stroke
 end
-
+local CustomFont = Font.new("rbxassetid://12187369046")
 -- Hàm tạo hiệu ứng gợn sóng giọt nước lan tỏa khi bấm
 local function triggerLiquidRipple(btn, x, y)
 	btn.ClipsDescendants = true
@@ -169,7 +170,9 @@ local function triggerLiquidRipple(btn, x, y)
 		droplet:Destroy()
 	end)
 end
-
+local CustomFont = Font.new("rbxassetid://12187369046")
+local CustomFont = Font.new("rbxassetid://12187369046")
+local CustomFont = Font.new("rbxassetid://12187369046")
 -- Phần Get Key
 local keyGui = Instance.new("ScreenGui")
 keyGui.Name = "LimitedEditionKeySystem"
@@ -237,7 +240,7 @@ applyRainbowTextStroke(linkNotify, 1.15, 0.1)
 
 getLinkBtn.MouseButton1Click:Connect(function(x, y)
 	triggerLiquidRipple(getLinkBtn, x, y)
-	local url = "https://raw.githubusercontent.com/dinhthaihoa130915-Creator/Unknown/refs/heads/lol/Key"
+	local url = "https://raw.githubusercontent.com/dinhthaihoa130915-Creator/Unknown/refs/heads/file/Key"
 	pcall(function()
 		if setclipboard then
 			setclipboard(url)
@@ -478,7 +481,12 @@ local function StartMainScript()
 	tracerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	tracerStroke.Transparency = 0.18
 
-	-- KHU VỰC TIỆN ÍCH DƯỚI
+	local CustomFont = Font.new("rbxassetid://12187369046")
+	local CustomFont = Font.new("rbxassetid://12187369046")
+	local CustomFont = Font.new("rbxassetid://12187369046")
+	local CustomFont = Font.new("rbxassetid://12187369046")
+	local CustomFont = Font.new("rbxassetid://12187369046")
+	
 	local bottomFrame = Instance.new("Frame", main)
 	bottomFrame.Size = UDim2.new(1, -24, 0, 63)
 	bottomFrame.Position = UDim2.new(0, 12, 0, 153)
@@ -686,7 +694,7 @@ local function StartMainScript()
 		ratio43Stroke.Transparency = Ratio43Enabled and 0.15 or 0.35
 
 		if Ratio43Enabled then
-			applyStretchMode(0.676767)
+			applyStretchMode(0.50)
 		else
 			applyStretchMode(1)
 		end
@@ -915,7 +923,9 @@ local function StartMainScript()
 		end
 	end)
 end
-
+local CustomFont = Font.new("rbxassetid://12187369046")
+local CustomFont = Font.new("rbxassetid://12187369046")
+local CustomFont = Font.new("rbxassetid://12187369046")
 submitBtn.MouseButton1Click:Connect(function(x, y)
 	triggerLiquidRipple(submitBtn, x, y)
 	if keyBox.Text ~= "" then
