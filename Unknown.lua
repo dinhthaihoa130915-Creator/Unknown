@@ -11,9 +11,7 @@ local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
-
 local targetParent = pcall(function() return CoreGui end) and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-
 local customFont = Font.fromId(12187369046)
 local CustomFont = Font.new("rbxassetid://12187369046")
 
