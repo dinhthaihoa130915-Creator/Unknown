@@ -13,8 +13,7 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
 
 local targetParent = pcall(function() return CoreGui end) and CoreGui or LocalPlayer:WaitForChild("PlayerGui")
-local CustomFont = Font.new("rbxassetid://12187369046")
-local CustomFont = Font.new("rbxassetid://12187369046")
+
 local CustomFont = Font.new("rbxassetid://12187369046")
 
 -- Danh sách chứa các UIGradient viền cầu vồng của chữ để quay màu mượt
@@ -297,6 +296,10 @@ local function StartMainScript()
 	local LagToggleEnabled = false
 	local DarkModeEnabled = false
 	local Ratio43Enabled = false
+	local BhopEnabled = false
+	local BhopBonusSpeed = 0
+	local DefaultWalkSpeed = 16
+	local NoclipEnabled = false
 	local HitboxSize = 23
 	local SelectedPlayer = nil
 	local SpeedAmount = 50
@@ -475,6 +478,8 @@ local function StartMainScript()
 	local lagBtn, lagStroke = createButton("LAG : OFF", 9, buttonContainer)
 	local darkBtn, darkStroke = createButton("DARK MODE : OFF", 10, buttonContainer)
 	local ratio43Btn, ratio43Stroke = createButton("MÀN 4:3 : OFF", 11, buttonContainer)
+	local bhopBtn, bhopStroke = createButton("BHOP : OFF", 12, buttonContainer)
+	local noclipBtn, noclipStroke = createButton("NOCLIP : OFF", 13, buttonContainer)
 
 	tracerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 	tracerStroke.Transparency = 0.18
@@ -693,6 +698,36 @@ local function StartMainScript()
 		end
 	end)
 
+	bhopBtn.MouseButton1Click:Connect(function(x, y)
+		moveLiquidTo(bhopBtn, x, y)
+		BhopEnabled = not BhopEnabled
+		BhopBonusSpeed = 0
+		bhopBtn.Text = BhopEnabled and "BHOP : ON" or "BHOP : OFF"
+		bhopBtn.TextColor3 = BhopEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(235, 242, 255)
+		bhopStroke.Transparency = BhopEnabled and 0.15 or 0.35
+		if not BhopEnabled and LocalPlayer.Character then
+			local hum = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+			if hum and not NormalSpeedEnabled then
+				hum.WalkSpeed = DefaultWalkSpeed
+			end
+		end
+	end)
+
+	noclipBtn.MouseButton1Click:Connect(function(x, y)
+		moveLiquidTo(noclipBtn, x, y)
+		NoclipEnabled = not NoclipEnabled
+		noclipBtn.Text = NoclipEnabled and "NOCLIP : ON" or "NOCLIP : OFF"
+		noclipBtn.TextColor3 = NoclipEnabled and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(235, 242, 255)
+		noclipStroke.Transparency = NoclipEnabled and 0.15 or 0.35
+		if not NoclipEnabled and LocalPlayer.Character then
+			for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+				if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+					part.CanCollide = true
+				end
+			end
+		end
+	end)
+
 	lagTriggerBtn.MouseButton1Click:Connect(function(x, y)
 		triggerLiquidRipple(lagTriggerBtn, x, y)
 		if IsLagging then return end
@@ -785,7 +820,17 @@ local function StartMainScript()
 		end
 	end)
 
-	RunService.RenderStepped:Connect(function()
+	RunService.Stepped:Connect(function()
+		if NoclipEnabled and LocalPlayer.Character then
+			for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end
+	end)
+
+	RunService.RenderStepped:Connect(function(dt)
 		local hue = (os.clock() % 5) / 5
 		local pastelRainbowColor = Color3.fromHSV(hue, 0.45, 1)
 
@@ -796,9 +841,9 @@ local function StartMainScript()
 			if humanoid then
 				if NormalSpeedEnabled then
 					humanoid.WalkSpeed = NormalSpeedAmount
-				else
-					if humanoid.WalkSpeed == NormalSpeedAmount then
-						humanoid.WalkSpeed = 16
+				elseif not BhopEnabled then
+					if humanoid.WalkSpeed == NormalSpeedAmount or BhopBonusSpeed > 0 then
+						humanoid.WalkSpeed = DefaultWalkSpeed
 					end
 				end
 			end
@@ -806,6 +851,52 @@ local function StartMainScript()
 			if AutoJumpEnabled and humanoid then
 				if humanoid.FloorMaterial ~= Enum.Material.Air then
 					humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+				end
+			end
+
+			-- Bhop: vừa chạy vừa nhảy thì chạy nhanh lên; đụng tường thì mất hết tốc độ và về tốc độ bình thường
+			if BhopEnabled and humanoid and root and not NormalSpeedEnabled then
+				local moveDir = humanoid.MoveDirection
+				local isAirborneOrJumping = (humanoid.FloorMaterial == Enum.Material.Air) or (humanoid:GetState() == Enum.HumanoidStateType.Jumping)
+
+				if moveDir.Magnitude > 0 then
+					local raycastParams = RaycastParams.new()
+					raycastParams.FilterType = Enum.RaycastFilterType.Exclude
+					raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
+					raycastParams.IgnoreWater = true
+
+					local flatDir = Vector3.new(moveDir.X, 0, moveDir.Z)
+					local checkDist = 2.6 + (BhopBonusSpeed * 0.06)
+					local hitWall = false
+
+					if flatDir.Magnitude > 0 then
+						local rayForward = Workspace:Raycast(root.Position, flatDir.Unit * checkDist, raycastParams)
+						local rayLow = Workspace:Raycast(root.Position - Vector3.new(0, 1.2, 0), flatDir.Unit * checkDist, raycastParams)
+						local rayHigh = Workspace:Raycast(root.Position + Vector3.new(0, 1.2, 0), flatDir.Unit * checkDist, raycastParams)
+						if rayForward or rayLow or rayHigh then
+							hitWall = true
+						end
+					end
+
+					if hitWall then
+						-- Đụng tường: mất hết tốc độ bonus, quay lại tốc độ bình thường của game
+						BhopBonusSpeed = 0
+						humanoid.WalkSpeed = DefaultWalkSpeed
+					else
+						if isAirborneOrJumping then
+							-- Đang chạy và nhảy: tăng tốc độ bhop dần
+							BhopBonusSpeed = math.min(BhopBonusSpeed + (dt * 26), 34)
+							humanoid.WalkSpeed = DefaultWalkSpeed + BhopBonusSpeed
+						else
+							-- Chạm đất khi chưa nhảy tiếp: giữ nhẹ quán tính nhưng không tăng thêm
+							BhopBonusSpeed = math.max(BhopBonusSpeed - (dt * 18), 0)
+							humanoid.WalkSpeed = DefaultWalkSpeed + BhopBonusSpeed
+						end
+					end
+				else
+					-- Đứng yên thì mất tốc độ bonus và về bình thường
+					BhopBonusSpeed = 0
+					humanoid.WalkSpeed = DefaultWalkSpeed
 				end
 			end
 
