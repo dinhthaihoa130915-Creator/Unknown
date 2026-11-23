@@ -1,0 +1,370 @@
+-- By Đinh Thái Hoà (Liquid Glass Edition)
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Dọn dẹp instance & kết nối cũ khi chạy lại script
+_G._WallHopV2Session = (_G._WallHopV2Session or 0) + 1
+local currentSession = _G._WallHopV2Session
+
+if _G._WallHopV2Connections then
+	for _, conn in ipairs(_G._WallHopV2Connections) do
+		if conn and conn.Connected then
+			conn:Disconnect()
+		end
+	end
+end
+_G._WallHopV2Connections = {}
+
+local function trackConnection(conn)
+	table.insert(_G._WallHopV2Connections, conn)
+	return conn
+end
+
+-- Luôn reset tắt chức năng khi chạy lại code
+_G._WallHopV2Enabled = false
+
+if PlayerGui:FindFirstChild("WallHopV2Gui") then
+	PlayerGui.WallHopV2Gui:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "WallHopV2Gui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = PlayerGui
+
+-- Khung chính Liquid Glass
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "LiquidGlassFrame"
+MainFrame.BackgroundColor3 = Color3.fromRGB(28, 32, 48)
+MainFrame.BackgroundTransparency = 0.42
+MainFrame.Size = UDim2.new(0, 248, 0, 96)
+MainFrame.Position = UDim2.new(0.5, -124, 0.5, -48)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 22)
+MainCorner.Parent = MainFrame
+
+-- Lớp ánh sáng Liquid Glass bên trong
+local GlassShine = Instance.new("Frame")
+GlassShine.Name = "GlassShine"
+GlassShine.Size = UDim2.new(1, 0, 1, 0)
+GlassShine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+GlassShine.BackgroundTransparency = 0.9
+GlassShine.BorderSizePixel = 0
+GlassShine.Parent = MainFrame
+
+local ShineCorner = Instance.new("UICorner")
+ShineCorner.CornerRadius = UDim.new(0, 22)
+ShineCorner.Parent = GlassShine
+
+local GlassGradient = Instance.new("UIGradient")
+GlassGradient.Rotation = 35
+GlassGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+	ColorSequenceKeypoint.new(0.45, Color3.fromRGB(160, 185, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(95, 110, 255))
+})
+GlassGradient.Transparency = NumberSequence.new({
+	NumberSequenceKeypoint.new(0, 0.65),
+	NumberSequenceKeypoint.new(0.5, 0.92),
+	NumberSequenceKeypoint.new(1, 0.78)
+})
+GlassGradient.Parent = GlassShine
+
+-- Viền kính Liquid Glass
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 1.6
+MainStroke.Transparency = 0.2
+MainStroke.Parent = MainFrame
+
+local StrokeGradient = Instance.new("UIGradient")
+StrokeGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(140, 175, 255)),
+	ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 140, 255))
+})
+StrokeGradient.Parent = MainStroke
+
+local CustomFont = Font.new("rbxassetid://12187369046")
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Size = UDim2.new(1, -44, 0, 28)
+TitleLabel.Position = UDim2.new(0, 16, 0, 10)
+TitleLabel.Text = "⚡ WALLHOP V2 · GLASS"
+TitleLabel.TextColor3 = Color3.fromRGB(245, 248, 255)
+TitleLabel.TextSize = 13
+TitleLabel.FontFace = CustomFont
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = MainFrame
+
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.BackgroundTransparency = 0.88
+MinimizeButton.Size = UDim2.new(0, 26, 0, 26)
+MinimizeButton.Position = UDim2.new(1, -36, 0, 11)
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(235, 240, 255)
+MinimizeButton.TextSize = 16
+MinimizeButton.FontFace = CustomFont
+MinimizeButton.AutoButtonColor = false
+MinimizeButton.Parent = MainFrame
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(1, 0)
+MinCorner.Parent = MinimizeButton
+
+-- Nút icon khi thu nhỏ
+local IconButton = Instance.new("ImageButton")
+IconButton.BackgroundColor3 = Color3.fromRGB(28, 32, 48)
+IconButton.BackgroundTransparency = 0.35
+IconButton.Size = UDim2.new(1, 0, 1, 0)
+IconButton.Position = UDim2.new(0, 0, 0, 0)
+IconButton.Visible = false
+IconButton.AutoButtonColor = false
+IconButton.Active = false
+IconButton.Parent = MainFrame
+
+local IconCorner = Instance.new("UICorner")
+IconCorner.CornerRadius = UDim.new(0, 16)
+IconCorner.Parent = IconButton
+
+local IconStroke = Instance.new("UIStroke")
+IconStroke.Thickness = 1.6
+IconStroke.Transparency = 0.2
+IconStroke.Enabled = false
+IconStroke.Parent = IconButton
+
+-- Chuyển động nhẹ cho ánh kính Liquid Glass
+trackConnection(RunService.RenderStepped:Connect(function()
+	if _G._WallHopV2Session ~= currentSession then return end
+	local wave = (tick() * 35) % 360
+	StrokeGradient.Rotation = wave
+	GlassGradient.Rotation = 35 + math.sin(tick() * 1.5) * 12
+
+	local hue = (tick() % 6) / 6
+	local glassAccent = Color3.fromHSV(hue, 0.45, 1)
+	MainStroke.Color = glassAccent
+	IconStroke.Color = glassAccent
+end))
+
+-- Tải icon
+local ICON_URL = "https://cdn.phototourl.com/member/2026-10-30-9b1fa678-6e64-45fe-8b60-066b7ef50daa.png"
+local FALLBACK_ICON = "rbxassetid://10723223019"
+
+task.spawn(function()
+	local ok, customAsset = pcall(function()
+		if writefile and getcustomasset then
+			local imageData = game:HttpGet(ICON_URL)
+			writefile("wallhop_icon.png", imageData)
+			return getcustomasset("wallhop_icon.png")
+		end
+	end)
+	if _G._WallHopV2Session == currentSession and IconButton.Parent then
+		IconButton.Image = (ok and customAsset) and customAsset or FALLBACK_ICON
+	end
+end)
+
+-- Nút công tắc bật/tắt WallHop (mặc định TẮT khi chạy lại)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.BackgroundTransparency = 0.88
+ToggleButton.Size = UDim2.new(1, -26, 0, 38)
+ToggleButton.Position = UDim2.new(0, 13, 0, 44)
+ToggleButton.Text = ""
+ToggleButton.AutoButtonColor = false
+ToggleButton.Parent = MainFrame
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 14)
+ToggleCorner.Parent = ToggleButton
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Color = Color3.fromRGB(255, 255, 255)
+ToggleStroke.Transparency = 0.72
+ToggleStroke.Thickness = 1
+ToggleStroke.Parent = ToggleButton
+
+local ToggleLabel = Instance.new("TextLabel")
+ToggleLabel.BackgroundTransparency = 1
+ToggleLabel.Size = UDim2.new(1, -56, 1, 0)
+ToggleLabel.Position = UDim2.new(0, 14, 0, 0)
+ToggleLabel.Text = "WallHop: OFF"
+ToggleLabel.TextColor3 = Color3.fromRGB(235, 240, 255)
+ToggleLabel.TextSize = 12
+ToggleLabel.FontFace = CustomFont
+ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+ToggleLabel.Parent = ToggleButton
+
+local SwitchTrack = Instance.new("Frame")
+SwitchTrack.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
+SwitchTrack.BackgroundTransparency = 0.15
+SwitchTrack.Size = UDim2.new(0, 42, 0, 22)
+SwitchTrack.Position = UDim2.new(1, -50, 0.5, -11)
+SwitchTrack.Parent = ToggleButton
+
+local SwitchTrackCorner = Instance.new("UICorner")
+SwitchTrackCorner.CornerRadius = UDim.new(1, 0)
+SwitchTrackCorner.Parent = SwitchTrack
+
+local SwitchThumb = Instance.new("Frame")
+SwitchThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SwitchThumb.Size = UDim2.new(0, 18, 0, 18)
+SwitchThumb.Position = UDim2.new(0, 2, 0.5, -9)
+SwitchThumb.Parent = SwitchTrack
+
+local SwitchThumbCorner = Instance.new("UICorner")
+SwitchThumbCorner.CornerRadius = UDim.new(1, 0)
+SwitchThumbCorner.Parent = SwitchThumb
+
+-- Thu nhỏ / Phóng to UI
+local isMinimized = false
+local function setMinimized(state)
+	isMinimized = state
+	local expanded = not isMinimized
+
+	TitleLabel.Visible = expanded
+	MinimizeButton.Visible = expanded
+	ToggleButton.Visible = expanded
+	GlassShine.Visible = expanded
+	MainStroke.Enabled = expanded
+
+	MainFrame.Active = expanded
+	MainFrame.Draggable = expanded
+
+	IconButton.Visible = isMinimized
+	IconButton.Active = isMinimized
+	IconStroke.Enabled = isMinimized
+
+	MainFrame.Size = isMinimized and UDim2.new(0, 46, 0, 46) or UDim2.new(0, 248, 0, 96)
+end
+
+MinimizeButton.MouseButton1Click:Connect(function()
+	setMinimized(true)
+end)
+
+IconButton.MouseButton1Click:Connect(function()
+	setMinimized(false)
+end)
+
+-- Cập nhật trạng thái công tắc
+local function setWallHopState(enabled, instant)
+	_G._WallHopV2Enabled = enabled
+	ToggleLabel.Text = enabled and "WallHop: ON" or "WallHop: OFF"
+
+	local targetColor = enabled and Color3.fromRGB(46, 204, 113) or Color3.fromRGB(231, 76, 60)
+	local targetPos = enabled and UDim2.new(1, -20, 0.5, -9) or UDim2.new(0, 2, 0.5, -9)
+
+	SwitchTrack.BackgroundColor3 = targetColor
+	if instant then
+		SwitchThumb.Position = targetPos
+	else
+		SwitchThumb:TweenPosition(targetPos, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.15, true)
+	end
+end
+
+-- Đặt mặc định là TẮT ngay khi khởi tạo
+setWallHopState(false, true)
+
+ToggleButton.MouseButton1Click:Connect(function()
+	setWallHopState(not _G._WallHopV2Enabled, false)
+end)
+
+-- Logic WallHop
+local canJump = true
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
+
+local function getNearestWall()
+	local character = LocalPlayer.Character
+	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+	if not rootPart then
+		return nil
+	end
+
+	rayParams.FilterDescendantsInstances = {character}
+
+	local directions = {
+		rootPart.CFrame.LookVector,
+		-rootPart.CFrame.LookVector,
+		rootPart.CFrame.RightVector,
+		-rootPart.CFrame.RightVector
+	}
+
+	local maxDistance = 2
+	local closestHit = nil
+	local closestDistance = maxDistance + 1
+
+	for _, dir in ipairs(directions) do
+		local result = Workspace:Raycast(rootPart.Position, dir * maxDistance, rayParams)
+		if result and result.Instance and result.Distance < closestDistance then
+			closestDistance = result.Distance
+			closestHit = result
+		end
+	end
+
+	return closestHit
+end
+
+local function safeHorizontalUnit(vec, fallback)
+	local flat = Vector3.new(vec.X, 0, vec.Z)
+	if flat.Magnitude < 0.05 then
+		return fallback
+	end
+	return flat.Unit
+end
+
+trackConnection(UserInputService.JumpRequest:Connect(function()
+	if _G._WallHopV2Session ~= currentSession then return end
+	if not _G._WallHopV2Enabled or not canJump then
+		return
+	end
+
+	local character = LocalPlayer.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+	local camera = Workspace.CurrentCamera
+	if not (humanoid and rootPart and camera) then
+		return
+	end
+
+	local wallHit = getNearestWall()
+	if not wallHit then
+		return
+	end
+
+	canJump = false
+
+	local fallbackDir = safeHorizontalUnit(rootPart.CFrame.LookVector, Vector3.new(0, 0, -1))
+	local wallNormalFlat = safeHorizontalUnit(wallHit.Normal, fallbackDir)
+	local camLookFlat = safeHorizontalUnit(camera.CFrame.LookVector, wallNormalFlat)
+
+	local cross = wallNormalFlat:Cross(camLookFlat)
+	local turnSign = math.sign(cross.Y)
+	if turnSign == 0 then
+		turnSign = 1
+	end
+
+	local targetLook = CFrame.Angles(0, math.rad(45) * turnSign, 0) * wallNormalFlat
+	rootPart.CFrame = CFrame.lookAt(rootPart.Position, rootPart.Position + targetLook)
+
+	RunService.Heartbeat:Wait()
+
+	if _G._WallHopV2Session == currentSession and humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+		humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+		local pushDir = -wallNormalFlat
+		rootPart.CFrame = CFrame.lookAt(rootPart.Position, rootPart.Position + pushDir)
+	end
+
+	task.wait(0.15)
+	canJump = true
+end))
